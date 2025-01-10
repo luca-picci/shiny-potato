@@ -77,6 +77,7 @@ public class User {
     public void setReviews(Set<Review> reviews) {
         this.reviews = reviews;
     }
+
 }
 
 enum UserType {
