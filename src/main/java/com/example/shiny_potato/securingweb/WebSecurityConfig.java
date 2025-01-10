@@ -10,10 +10,14 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.lang.NonNull;
 
 @Configuration
-public class WebSecurityConfig {
+public class WebSecurityConfig implements WebMvcConfigurer {  // Usa WebMvcConfigurer, non un record
 
+    // Metodo per configurare la sicurezza del backend
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -25,11 +29,21 @@ public class WebSecurityConfig {
                 .anyRequest().authenticated() // Gli altri endpoint richiedono autenticazione
             )
             .httpBasic(); // Abilita l'autenticazione di base (basic auth)
-            
 
         return http.build();
     }
 
+    // Configurazione CORS
+    @Override
+    public void addCorsMappings(@NonNull CorsRegistry registry) {  // Aggiungi l'annotazione @NonNull
+        // Permetti CORS solo per il frontend su localhost:4200 (porta di default di Angular)
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:4200")  // Cambia con l'URL del tuo frontend
+                .allowedMethods("GET", "POST", "PUT", "DELETE")  // I metodi consentiti
+                .allowedHeaders("*");  // Permetti tutti gli header
+    }
+
+    // In-memory user details manager per la gestione degli utenti
     @Bean
     public InMemoryUserDetailsManager userDetailsService(PasswordEncoder passwordEncoder) {
         UserDetails client = User.withUsername("user")
@@ -45,6 +59,7 @@ public class WebSecurityConfig {
         return new InMemoryUserDetailsManager(client, manager);
     }
 
+    // Encoder della password
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
