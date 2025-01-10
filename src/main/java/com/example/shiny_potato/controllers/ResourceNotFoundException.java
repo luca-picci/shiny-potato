@@ -1,4 +1,4 @@
-package com.example.shiny_potato.controller;
+package com.example.shiny_potato.controllers;
 
 public class ResourceNotFoundException extends RuntimeException {
  public ResourceNotFoundException(String message) {

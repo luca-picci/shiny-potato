@@ -1,4 +1,4 @@
-package com.example.shiny_potato.securingweb;
+package com.example.shiny_potato.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,8 +10,12 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import com.example.shiny_potato.filters.JwtAuthenticationFilter;
+
 import org.springframework.lang.NonNull;
 
 @Configuration
@@ -21,14 +25,14 @@ public class WebSecurityConfig implements WebMvcConfigurer {  // Usa WebMvcConfi
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/venues/**").hasRole("MANAGER") // Solo i manager possono accedere agli endpoint di Venue
                 .requestMatchers(HttpMethod.POST, "/events").hasRole("MANAGER") // Solo i manager possono fare una POST su /events (Creazione evento)
                 .requestMatchers(HttpMethod.PUT, "/events/**").hasRole("MANAGER") // Solo i manager possono fare una PUT su /events/{id} (Modifica evento)
                 .requestMatchers(HttpMethod.DELETE, "/events/**").hasRole("MANAGER") // Solo i manager possono fare una DELETE su /events/{id} (Eliminazione evento)
                 .anyRequest().authenticated() // Gli altri endpoint richiedono autenticazione
-            )
-            .httpBasic(); // Abilita l'autenticazione di base (basic auth)
+            );
 
         return http.build();
     }
