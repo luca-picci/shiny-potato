@@ -50,12 +50,12 @@ public class WebSecurityConfig implements WebMvcConfigurer {  // Usa WebMvcConfi
     // In-memory user details manager per la gestione degli utenti
     @Bean
     public InMemoryUserDetailsManager userDetailsService(PasswordEncoder passwordEncoder) {
-        UserDetails client = User.withUsername("user")
+        UserDetails client = User.withUsername("user@example.com")
             .password(passwordEncoder.encode("password"))
             .roles("CLIENT")
             .build();
 
-        UserDetails manager = User.withUsername("admin")
+        UserDetails manager = User.withUsername("admin@example.com")
             .password(passwordEncoder.encode("password"))
             .roles("MANAGER")
             .build();
