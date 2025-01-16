@@ -1,9 +1,11 @@
+CREATE TYPE user_type_enum AS ENUM ('CLIENT', 'MANAGER');
+
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    user_type VARCHAR(50) NOT NULL
+     user_type user_type_enum NOT NULL
 );
 
 CREATE TABLE venues (
@@ -14,7 +16,7 @@ CREATE TABLE venues (
 
 CREATE TABLE events (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL,
     date DATE NOT NULL,
     venue_id INT,
     FOREIGN KEY (venue_id) REFERENCES venues (id)

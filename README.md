@@ -16,7 +16,6 @@ L'applicazione utilizza **autenticazione tramite token JWT**, quindi per acceder
 
 Gli utenti devono autenticarsi utilizzando l'endpoint `/auth/login`, che restituisce un token JWT in caso di credenziali valide. Il token deve essere incluso nell'header `Authorization` di tutte le richieste successive:
 
-
 ### Endpoint di Autenticazione
 
 - **POST /auth/register**: Permette la registrazione di un nuovo utente (ruolo predefinito: `CLIENT`).
@@ -34,6 +33,22 @@ Due ruoli principali sono definiti nel sistema:
 
 1. **CLIENT**: Utenti regolari con accesso limitato.
 2. **MANAGER**: Amministratori con accesso completo alle risorse protette.
+
+### Utenti di Test nel Database
+
+1. **Utente Client (CLIENT)**:
+   - **Nome**: Giulia
+   - **Email**: `giulia@example.com`
+   - **Password**: `password1` (La password è crittografata, quindi non può essere visualizzata direttamente.)
+   - **Ruolo**: CLIENT
+
+2. **Utente Manager (MANAGER)**:
+   - **Nome**: Lorenzo
+   - **Email**: `lorenzo@example.com`
+   - **Password**: `password2` (La password è crittografata, quindi non può essere visualizzata direttamente.)
+   - **Ruolo**: MANAGER
+
+Questi utenti possono essere utilizzati per effettuare login e testare l'accesso a risorse protette.
 
 ## Configurazione del Token JWT
 
@@ -56,22 +71,6 @@ Se un token è mancante, non valido o scaduto, il sistema restituisce un errore 
 
 ---
 
-## Esempio di Utenti di Test
-
-Due utenti predefiniti sono configurati per scopi di test. Gli utenti sono definiti nel database e i loro dettagli sono i seguenti:
-
-1. **Utente Client (CLIENT)**:
-   - Email: `user@example.com`
-   - Password: `password`
-
-2. **Utente Manager (MANAGER)**:
-   - Email: `admin@example.com`
-   - Password: `password`
-
-Questi utenti possono essere utilizzati per effettuare login e testare l'accesso a risorse protette.
-
----
-
 ## Tecnologie Utilizzate
 
 - **Spring Boot**
@@ -86,3 +85,4 @@ Questi utenti possono essere utilizzati per effettuare login e testare l'accesso
 2. Registrare o autenticare un utente tramite gli endpoint `/auth/register` o `/auth/login`.
 3. Utilizzare il token JWT generato per accedere agli endpoint protetti.
 
+---

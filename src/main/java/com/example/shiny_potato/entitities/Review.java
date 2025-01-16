@@ -1,5 +1,8 @@
 package com.example.shiny_potato.entitities;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,6 +13,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "reviews")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Review {
 
     @Id

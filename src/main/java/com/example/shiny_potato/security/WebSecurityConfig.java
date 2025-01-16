@@ -2,70 +2,74 @@ package com.example.shiny_potato.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.example.shiny_potato.filters.JwtAuthenticationFilter;
+import com.example.shiny_potato.utilities.JwtUtil;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 
-import org.springframework.lang.NonNull;
+import javax.crypto.spec.SecretKeySpec;
 
 @Configuration
-public class WebSecurityConfig implements WebMvcConfigurer {  // Usa WebMvcConfigurer, non un record
+@EnableWebSecurity
+public class WebSecurityConfig {
 
-    // Metodo per configurare la sicurezza del backend
+    // Chiave segreta per firmare i JWT
+    private static final String SECRET_KEY = "improved-rotary-phone";
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+        // CORS configurazione
         http
-            .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+            .cors(cors -> cors.configurationSource(request -> {
+                var corsConfig = new org.springframework.web.cors.CorsConfiguration();
+                corsConfig.addAllowedOrigin("http://localhost:4200"); // Permetti richieste dal frontend Angular
+                corsConfig.addAllowedMethod("*");
+                corsConfig.addAllowedHeader("*");
+                corsConfig.setAllowCredentials(true);
+                return corsConfig;
+            }))
+            // Disabilita CSRF per le API REST
+            .csrf(csrf -> csrf.disable())
+            .headers(headers -> {
+                headers.frameOptions(frameOptions -> frameOptions.sameOrigin()); // Permetti gli iframe con la stessa origine
+            })
+            // Aggiungi il filtro JWT
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            // Autorizzazione per gli endpoint
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/venues/**").hasRole("MANAGER") // Solo i manager possono accedere agli endpoint di Venue
-                .requestMatchers(HttpMethod.POST, "/events").hasRole("MANAGER") // Solo i manager possono fare una POST su /events (Creazione evento)
-                .requestMatchers(HttpMethod.PUT, "/events/**").hasRole("MANAGER") // Solo i manager possono fare una PUT su /events/{id} (Modifica evento)
-                .requestMatchers(HttpMethod.DELETE, "/events/**").hasRole("MANAGER") // Solo i manager possono fare una DELETE su /events/{id} (Eliminazione evento)
-                .anyRequest().authenticated() // Gli altri endpoint richiedono autenticazione
-            );
+                .requestMatchers("/auth/login", "/auth/register", "/h2-console/**").permitAll() // Endpoint pubblici
+                .requestMatchers("/events", "/venues").authenticated() // GET su /events e /venues sono accessibili a chi è autenticato
+                .requestMatchers("/events/**", "/venues/**").hasAuthority("MANAGER") // Tutte le altre operazioni su /events e /venues (POST, PUT, DELETE) richiedono l'autorità MANAGER
+                .anyRequest().authenticated() // Gli altri endpoint sono protetti
+            )
+            // Gestione sessione stateless (nessuna sessione)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Configura stateless per REST APIs
 
         return http.build();
     }
 
-    // Configurazione CORS
-    @Override
-    public void addCorsMappings(@NonNull CorsRegistry registry) {  // Aggiungi l'annotazione @NonNull
-        // Permetti CORS solo per il frontend su localhost:4200 (porta di default di Angular)
-        registry.addMapping("/**")
-                .allowedOrigins("http://localhost:4200")  // Cambia con l'URL del tuo frontend
-                .allowedMethods("GET", "POST", "PUT", "DELETE")  // I metodi consentiti
-                .allowedHeaders("*");  // Permetti tutti gli header
-    }
-
-    // In-memory user details manager per la gestione degli utenti
     @Bean
-    public InMemoryUserDetailsManager userDetailsService(PasswordEncoder passwordEncoder) {
-        UserDetails client = User.withUsername("user@example.com")
-            .password(passwordEncoder.encode("password"))
-            .roles("CLIENT")
-            .build();
-
-        UserDetails manager = User.withUsername("admin@example.com")
-            .password(passwordEncoder.encode("password"))
-            .roles("MANAGER")
-            .build();
-
-        return new InMemoryUserDetailsManager(client, manager);
+    public JwtDecoder jwtDecoder() {
+        byte[] secretKeyBytes = SECRET_KEY.getBytes();
+        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKeyBytes, "HmacSHA256");
+        return NimbusJwtDecoder.withSecretKey(secretKeySpec).build(); // Decodifica i JWT usando la chiave segreta
     }
 
-    // Encoder della password
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        return new BCryptPasswordEncoder(); // Usa un encoder sicuro (BCrypt)
+    }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtil jwtUtil) {
+        return new JwtAuthenticationFilter(jwtUtil); // Inietta JwtUtil nel filtro
     }
 }

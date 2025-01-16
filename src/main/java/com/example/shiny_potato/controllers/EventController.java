@@ -2,6 +2,7 @@ package com.example.shiny_potato.controllers;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,8 +18,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.shiny_potato.dto.EventDTO;
 import com.example.shiny_potato.entitities.Event;
 import com.example.shiny_potato.entitities.Venue;
+import com.example.shiny_potato.mappers.EventMapper;
 import com.example.shiny_potato.repositories.EventRepository;
 import com.example.shiny_potato.repositories.VenueRepository;
 
@@ -33,28 +36,34 @@ public class EventController {
     @Autowired
     private VenueRepository venueRepository;
 
+    @Autowired
+    private EventMapper eventMapper;
+
     // GET /events - Lista di tutti gli eventi
     @GetMapping
-    public List<Event> getAllEvents() {
-        return eventRepository.findAll();
+    public List<EventDTO> getAllEvents() {
+        return eventRepository.findAll()
+            .stream()
+            .map(eventMapper::toEventDTO)
+            .collect(Collectors.toList());
     }
 
     // GET /venues/{id}/events - Lista eventi per un locale specifico
     @GetMapping("/venues/{id}")
     public List<Event> getEventsByVenue(@PathVariable Long id) {
         Optional<Venue> venue = venueRepository.findById(id);
-        if(venue.isPresent()) {
+        if (venue.isPresent()) {
             return eventRepository.findByVenue(venue.get());
         } else {
-            throw new ResourceNotFoundException("Venue not found with id " + id );
+            throw new ResourceNotFoundException("Venue not found with id " + id);
         }
     }
 
     // POST /events - Crea un nuovo evento (solo per gestori)
     @PostMapping
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasAuthority('MANAGER')")  
     public ResponseEntity<Event> createEvent(@Valid @RequestBody Event event) {
-        if(event.getVenue() == null || !venueRepository.existsById(event.getVenue().getId())) {
+        if (event.getVenue() == null || !venueRepository.existsById(event.getVenue().getId())) {
             throw new ResourceNotFoundException("Venue not found with id " + event.getVenue().getId());
         }
 
@@ -64,18 +73,18 @@ public class EventController {
 
     // PUT /events/{id} - Modifica di un evento esistente (solo per gestori)
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasAuthority('MANAGER')") 
     public ResponseEntity<Event> updateEvent(@PathVariable Long id, @Valid @RequestBody Event eventDetails) {
         Optional<Event> existingEvent = eventRepository.findById(id);
 
-        if(existingEvent.isPresent()) {
+        if (existingEvent.isPresent()) {
             Event updatedEvent = existingEvent.get();
             updatedEvent.setTitle(eventDetails.getTitle());
             updatedEvent.setDescription(eventDetails.getDescription());
             updatedEvent.setDate(eventDetails.getDate());
             updatedEvent.setVenue(eventDetails.getVenue());
 
-            if(updatedEvent.getVenue() == null || !venueRepository.existsById(updatedEvent.getId())) {
+            if (updatedEvent.getVenue() == null || !venueRepository.existsById(updatedEvent.getId())) {
                 throw new ResourceNotFoundException("Venue not found with id " + updatedEvent.getVenue().getId());
             }
 
@@ -86,20 +95,18 @@ public class EventController {
         }
     }
 
-    // DELETE /events/{id} - Rimozione di un evento esiste (solo per gestori)
+    // DELETE /events/{id} - Rimozione di un evento esistente (solo per gestori)
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasAuthority('MANAGER')")  
     public ResponseEntity<Void> deleteEvent(@PathVariable Long id) {
         Optional<Event> event = eventRepository.findById(id);
 
-        if(event.isPresent()) {
+        if (event.isPresent()) {
             eventRepository.delete(event.get());
             return ResponseEntity.noContent().build();
         } else {
             throw new ResourceNotFoundException("Event not found with id " + id);
         }
     }
+}
 
-   
-        }                                        
-  
