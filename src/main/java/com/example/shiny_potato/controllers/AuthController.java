@@ -31,31 +31,32 @@ public class AuthController {
 
     // Login
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody User loginUser) {
-        // Cerca l'utente nel database per email
-        User userFromDb = userRepository.findByEmail(loginUser.getEmail());
-        Map<String, String> response = new HashMap<>();
-        
-        if (userFromDb != null) {
-            // Verifica se la password fornita corrisponde a quella criptata nel database
-            if (passwordEncoder.matches(loginUser.getPassword(), userFromDb.getPassword())) {
-                // Ottieni il ruolo dell'utente, qui assumiamo che esista un campo `userType` nell'entità `User`
-                String role = userFromDb.getUserType().toString();  // Converte l'enum in stringa
+public ResponseEntity<Map<String, String>> login(@RequestBody User loginUser) {
+    // Cerca l'utente nel database per email
+    User userFromDb = userRepository.findByEmail(loginUser.getEmail());
+    Map<String, String> response = new HashMap<>();
+    
+    if (userFromDb != null) {
+        // Verifica se la password fornita corrisponde a quella criptata nel database
+        if (passwordEncoder.matches(loginUser.getPassword(), userFromDb.getPassword())) {
+            // Ottieni il ruolo dell'utente, qui assumiamo che esista un campo `userType` nell'entità `User`
+            String role = userFromDb.getUserType().toString();  // Converte l'enum in stringa
 
-                // Genera il token JWT con l'email e il ruolo dell'utente
-                String token = jwtUtil.generateToken(userFromDb.getEmail(), role);
-                response.put("token", token);
-                return ResponseEntity.ok(response);  // Restituisce il token JWT con una risposta 200
-            } else {
-                response.put("message", "Invalid credentials");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);  // 401 Unauthorized
-            }
+            // Genera il token JWT con l'email, il ruolo e l'ID dell'utente
+            String token = jwtUtil.generateToken(userFromDb.getEmail(), role, userFromDb.getId()); // <-- Corretto qui
+            response.put("token", token);
+            return ResponseEntity.ok(response);  // Restituisce il token JWT con una risposta 200
+        } else {
+            response.put("message", "Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);  // 401 Unauthorized
         }
-        
-        // Se l'utente non esiste
-        response.put("message", "User not found");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);  // 401 Unauthorized
     }
+    
+    // Se l'utente non esiste
+    response.put("message", "User not found");
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);  // 401 Unauthorized
+}
+
 
     // Registro utente (facoltativo)
     @PostMapping("/register")

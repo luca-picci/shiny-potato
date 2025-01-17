@@ -47,6 +47,7 @@ public class WebSecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/auth/login", "/auth/register", "/h2-console/**").permitAll() // Endpoint pubblici
                 .requestMatchers("/events", "/venues").authenticated() // GET su /events e /venues sono accessibili a chi è autenticato
+                .requestMatchers("/reviews", "/reviews/**").authenticated() // Tutti gli endpoint relativi a /reviews richiedono autenticazione
                 .requestMatchers("/events/**", "/venues/**").hasAuthority("MANAGER") // Tutte le altre operazioni su /events e /venues (POST, PUT, DELETE) richiedono l'autorità MANAGER
                 .anyRequest().authenticated() // Gli altri endpoint sono protetti
             )

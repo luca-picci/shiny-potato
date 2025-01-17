@@ -32,28 +32,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
         String path = request.getRequestURI();
+        
+        // Permetti il passaggio per le route di login e registrazione
         if (path.startsWith("/auth/login") || path.startsWith("/auth/register")) {
             filterChain.doFilter(request, response);
             return;
         }
 
+        // Estrai il token JWT
         String token = request.getHeader("Authorization");
         if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
+            token = token.substring(7); // Rimuovi il prefisso "Bearer "
 
+            // Estrai l'email e il ruolo dal token
             String email = jwtUtil.extractEmail(token);
             String role = jwtUtil.extractClaim(token, "role");
+            Long userId = jwtUtil.extractUserId(token);
 
-            if (email != null && jwtUtil.validateToken(token, email)) {
+            // Verifica che il token sia valido
+            if (email != null && jwtUtil.validateToken(token, email, userId)) {
+                // Aggiungi l'autorizzazione per il ruolo dell'utente
                 Collection<GrantedAuthority> authorities = new ArrayList<>();
                 authorities.add(new SimpleGrantedAuthority(role));
 
+                // Imposta l'autenticazione nel contesto di sicurezza di Spring
                 SecurityContextHolder.getContext().setAuthentication(
                     new UsernamePasswordAuthenticationToken(email, null, authorities)
                 );
             }
         }
+        
+        // Continua la catena dei filtri
         filterChain.doFilter(request, response);
     }
 }
-

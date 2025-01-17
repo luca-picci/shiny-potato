@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-01-16T20:57:38+0100",
+    date = "2025-01-17T16:30:58+0100",
     comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.41.0.v20241217-1506, environment: Java 17.0.13 (Eclipse Adoptium)"
 )
 @Component
@@ -25,9 +25,9 @@ public class ReviewMapperImpl implements ReviewMapper {
 
         reviewDTO.setUserId( reviewUserId( review ) );
         reviewDTO.setEventId( reviewEventId( review ) );
+        reviewDTO.setComment( review.getComment() );
         reviewDTO.setId( review.getId() );
         reviewDTO.setRating( review.getRating() );
-        reviewDTO.setComment( review.getComment() );
 
         return reviewDTO;
     }
@@ -42,9 +42,9 @@ public class ReviewMapperImpl implements ReviewMapper {
 
         review.setUser( reviewDTOToUser( reviewDTO ) );
         review.setEvent( reviewDTOToEvent( reviewDTO ) );
+        review.setComment( reviewDTO.getComment() );
         review.setId( reviewDTO.getId() );
         review.setRating( reviewDTO.getRating() );
-        review.setComment( reviewDTO.getComment() );
 
         return review;
     }

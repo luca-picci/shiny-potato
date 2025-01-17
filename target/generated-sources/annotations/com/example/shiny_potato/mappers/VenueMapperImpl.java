@@ -6,7 +6,7 @@ import javax.annotation.processing.Generated;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-01-16T20:59:31+0100",
+    date = "2025-01-17T16:24:34+0100",
     comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.41.0.v20241217-1506, environment: Java 17.0.13 (Eclipse Adoptium)"
 )
 public class VenueMapperImpl implements VenueMapper {
@@ -19,10 +19,10 @@ public class VenueMapperImpl implements VenueMapper {
 
         VenueDTO venueDTO = new VenueDTO();
 
-        venueDTO.setAddress( venue.getAddress() );
-        venueDTO.setDescription( venue.getDescription() );
         venueDTO.setId( venue.getId() );
         venueDTO.setName( venue.getName() );
+        venueDTO.setAddress( venue.getAddress() );
+        venueDTO.setDescription( venue.getDescription() );
 
         venueDTO.setEventIds( venue.getEvents().stream().map(event -> event.getId()).collect(java.util.stream.Collectors.toSet()) );
 
@@ -37,10 +37,10 @@ public class VenueMapperImpl implements VenueMapper {
 
         Venue venue = new Venue();
 
-        venue.setAddress( venueDTO.getAddress() );
-        venue.setDescription( venueDTO.getDescription() );
         venue.setId( venueDTO.getId() );
         venue.setName( venueDTO.getName() );
+        venue.setAddress( venueDTO.getAddress() );
+        venue.setDescription( venueDTO.getDescription() );
 
         return venue;
     }
