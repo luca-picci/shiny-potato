@@ -1,6 +1,5 @@
 package com.example.shiny_potato.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,55 +14,71 @@ import com.example.shiny_potato.utilities.JwtUtil;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;  // PasswordEncoder è iniettato
-
-    // Login
-    @PostMapping("/login")
-public ResponseEntity<Map<String, String>> login(@RequestBody User loginUser) {
-    // Cerca l'utente nel database per email
-    User userFromDb = userRepository.findByEmail(loginUser.getEmail());
-    Map<String, String> response = new HashMap<>();
-    
-    if (userFromDb != null) {
-        // Verifica se la password fornita corrisponde a quella criptata nel database
-        if (passwordEncoder.matches(loginUser.getPassword(), userFromDb.getPassword())) {
-            // Ottieni il ruolo dell'utente, qui assumiamo che esista un campo `userType` nell'entità `User`
-            String role = userFromDb.getUserType().toString();  // Converte l'enum in stringa
-
-            // Genera il token JWT con l'email, il ruolo e l'ID dell'utente
-            String token = jwtUtil.generateToken(userFromDb.getEmail(), role, userFromDb.getId()); // <-- Corretto qui
-            response.put("token", token);
-            return ResponseEntity.ok(response);  // Restituisce il token JWT con una risposta 200
-        } else {
-            response.put("message", "Invalid credentials");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);  // 401 Unauthorized
-        }
+    // Dependency Injection via constructor
+    public AuthController(UserRepository userRepository, 
+                         JwtUtil jwtUtil,
+                         PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
     }
-    
-    // Se l'utente non esiste
-    response.put("message", "User not found");
-    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);  // 401 Unauthorized
-}
 
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, Object>> login(@RequestBody User loginUser) {
+        Map<String, Object> response = new HashMap<>();
+        
+        // 1. Cerca l'utente per email (usa Optional per gestire il caso null)
+        Optional<User> userOptional = userRepository.findByEmail(loginUser.getEmail());
+        
+        if (userOptional.isEmpty()) {
+            response.put("message", "Credenziali non valide");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
 
-    // Registro utente (facoltativo)
+        User userFromDb = userOptional.get();
+
+        // 2. Verifica password
+        if (!passwordEncoder.matches(loginUser.getPassword(), userFromDb.getPassword())) {
+            response.put("message", "Credenziali non valide");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        // 3. Genera token usando la nuova versione di JwtUtil
+        String token = jwtUtil.generateToken(userFromDb);
+        
+        // 4. Prepara risposta
+        response.put("token", token);
+        response.put("userId", userFromDb.getId());
+        response.put("role", userFromDb.getUserType());  // Assicurati che il campo si chiami "role" nell'entità
+        
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody User newUser) {
-        // Crea un nuovo utente con password criptata
-        newUser.setPassword(passwordEncoder.encode(newUser.getPassword())); // Cripta la password prima di salvarla
+    public ResponseEntity<Map<String, String>> register(@RequestBody User newUser) {
+        Map<String, String> response = new HashMap<>();
+        
+        // Verifica se l'email è già registrata
+        if (userRepository.findByEmail(newUser.getEmail()).isPresent()) {
+            response.put("message", "Email già registrata");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        // Cripta la password e salva
+        newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
         userRepository.save(newUser);
-        return ResponseEntity.ok("User registered successfully");
+        
+        response.put("message", "Registrazione completata con successo");
+        return ResponseEntity.ok(response);
     }
 }

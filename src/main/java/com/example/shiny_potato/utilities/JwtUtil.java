@@ -1,68 +1,83 @@
 package com.example.shiny_potato.utilities;
 
-import java.util.Date;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import java.security.Key;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
+import com.example.shiny_potato.repositories.UserRepository;
+import com.example.shiny_potato.entitities.User;
+import java.security.Key;
+import java.util.Date;
 
 @Component
 public class JwtUtil {
+    private final Key key;
+    private final UserRepository userRepository;
 
-    private static final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    public JwtUtil(UserRepository userRepository) {
+        this.key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        this.userRepository = userRepository;
+    }
 
-    // Genera il token includendo l'email, il ruolo e l'ID dell'utente
-    public String generateToken(String email, String role, Long userId) {
+    // Genera il token basato sull'utente
+    public String generateToken(User user) {
         return Jwts.builder()
-            .setSubject(email)
-            .claim("role", role)  // Aggiungi il ruolo nel claim del token
-            .claim("userId", userId)  // Aggiungi l'ID dell'utente nel claim
-            .setIssuedAt(new Date())
-            .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))  // Setta la scadenza del token
-            .signWith(key)
-            .compact();
+                .setSubject(user.getEmail())
+                .claim("role", user.getUserType())
+                .claim("userId", user.getId())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 3600000)) // 1 ora
+                .signWith(key)
+                .compact();
+    }
+
+    // Overload di validateToken che accetta solo il token (estrae email e userId)
+    public boolean validateToken(String token) {
+        try {
+            String email = extractEmail(token);
+            Long userId = extractUserId(token);
+            return validateToken(token, email, userId);
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    // Validazione completa: verifica email, userId e scadenza
+    public boolean validateToken(String token, String email, Long userId) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            Long extractedUserId = claims.get("userId", Long.class);
+            User user = userRepository.findById(extractedUserId)
+                    .orElseThrow(() -> new JwtException("Utente non trovato"));
+
+            return claims.getSubject().equals(user.getEmail()) &&
+                   claims.get("role").equals(user.getUserType()) &&
+                   !claims.getExpiration().before(new Date());
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 
     // Estrai l'email dal token
     public String extractEmail(String token) {
-        return Jwts.parserBuilder()
-            .setSigningKey(key)
-            .build()
-            .parseClaimsJws(token)
-            .getBody()
-            .getSubject();
+        return parseClaims(token).getSubject();
     }
 
     // Estrai l'ID dell'utente dal token
     public Long extractUserId(String token) {
-        return Long.parseLong(Jwts.parserBuilder()
-            .setSigningKey(key)
-            .build()
-            .parseClaimsJws(token)
-            .getBody()
-            .get("userId", String.class));  // Restituisce l'ID dell'utente come Long
+        return parseClaims(token).get("userId", Long.class);
     }
 
-    // Verifica se il token è scaduto
-    public boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Date extractExpiration(String token) {
+    private Claims parseClaims(String token) {
         return Jwts.parserBuilder()
-            .setSigningKey(key)
-            .build()
-            .parseClaimsJws(token)
-            .getBody()
-            .getExpiration();
-    }
-
-    // Verifica la validità del token
-    public boolean validateToken(String token, String email, Long userId) {
-        return (email.equals(extractEmail(token)) 
-                && userId.equals(extractUserId(token))  // Verifica che l'ID dell'utente nel token corrisponda
-                && !isTokenExpired(token));
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     // Estrai un claim specifico dal token
@@ -72,7 +87,6 @@ public class JwtUtil {
             .build()
             .parseClaimsJws(token)
             .getBody()
-            .get(claim, String.class);  // Restituisce il claim specificato
+            .get(claim, String.class);
     }
 }
-
