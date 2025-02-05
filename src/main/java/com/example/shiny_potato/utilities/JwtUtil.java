@@ -102,7 +102,7 @@ public class JwtUtil {
             Claims claims = parseClaims(token);
             return claims.get("role", String.class);
         } catch (JwtException | IllegalArgumentException e) {
-            return null; // Gestisci il caso di token non valido
+            return null; 
         }
     }
 
