@@ -1,26 +1,18 @@
 package com.example.shiny_potato.mappers;
 
 import com.example.shiny_potato.dto.EventDTO;
-import com.example.shiny_potato.dto.ReviewDTO;
 import com.example.shiny_potato.entitities.Event;
-import com.example.shiny_potato.entitities.Review;
 import com.example.shiny_potato.entitities.Venue;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import javax.annotation.processing.Generated;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-02-05T12:39:23+0100",
+    date = "2025-02-05T15:43:23+0100",
     comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.41.0.z20250115-2156, environment: Java 21.0.5 (Eclipse Adoptium)"
 )
 @Component
 public class EventMapperImpl implements EventMapper {
-
-    @Autowired
-    private ReviewMapper reviewMapper;
 
     @Override
     public EventDTO toEventDTO(Event event) {
@@ -31,11 +23,13 @@ public class EventMapperImpl implements EventMapper {
         EventDTO eventDTO = new EventDTO();
 
         eventDTO.setVenueId( eventVenueId( event ) );
-        eventDTO.setReviews( reviewSetToReviewDTOSet( event.getReviews() ) );
+        eventDTO.setBookedSeats( event.getBookedSeats() );
+        eventDTO.setCapacity( event.getCapacity() );
+        eventDTO.setDate( event.getDate() );
+        eventDTO.setDescription( event.getDescription() );
         eventDTO.setId( event.getId() );
         eventDTO.setTitle( event.getTitle() );
-        eventDTO.setDescription( event.getDescription() );
-        eventDTO.setDate( event.getDate() );
+        eventDTO.setType( event.getType() );
 
         return eventDTO;
     }
@@ -49,11 +43,13 @@ public class EventMapperImpl implements EventMapper {
         Event event = new Event();
 
         event.setVenue( eventDTOToVenue( eventDTO ) );
-        event.setReviews( reviewDTOSetToReviewSet( eventDTO.getReviews() ) );
+        event.setBookedSeats( eventDTO.getBookedSeats() );
+        event.setCapacity( eventDTO.getCapacity() );
+        event.setDate( eventDTO.getDate() );
+        event.setDescription( eventDTO.getDescription() );
         event.setId( eventDTO.getId() );
         event.setTitle( eventDTO.getTitle() );
-        event.setDescription( eventDTO.getDescription() );
-        event.setDate( eventDTO.getDate() );
+        event.setType( eventDTO.getType() );
 
         return event;
     }
@@ -66,19 +62,6 @@ public class EventMapperImpl implements EventMapper {
         return venue.getId();
     }
 
-    protected Set<ReviewDTO> reviewSetToReviewDTOSet(Set<Review> set) {
-        if ( set == null ) {
-            return null;
-        }
-
-        Set<ReviewDTO> set1 = new LinkedHashSet<ReviewDTO>( Math.max( (int) ( set.size() / .75f ) + 1, 16 ) );
-        for ( Review review : set ) {
-            set1.add( reviewMapper.toReviewDTO( review ) );
-        }
-
-        return set1;
-    }
-
     protected Venue eventDTOToVenue(EventDTO eventDTO) {
         if ( eventDTO == null ) {
             return null;
@@ -89,18 +72,5 @@ public class EventMapperImpl implements EventMapper {
         venue.setId( eventDTO.getVenueId() );
 
         return venue;
-    }
-
-    protected Set<Review> reviewDTOSetToReviewSet(Set<ReviewDTO> set) {
-        if ( set == null ) {
-            return null;
-        }
-
-        Set<Review> set1 = new LinkedHashSet<Review>( Math.max( (int) ( set.size() / .75f ) + 1, 16 ) );
-        for ( ReviewDTO reviewDTO : set ) {
-            set1.add( reviewMapper.toReview( reviewDTO ) );
-        }
-
-        return set1;
     }
 }

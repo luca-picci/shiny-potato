@@ -1,19 +1,9 @@
 package com.example.shiny_potato.entitities;
 
-import java.time.LocalDateTime;
-import java.util.Set;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-
-
-
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import java.util.Date;
 
 @Entity
 @Table(name = "events")
@@ -23,18 +13,40 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Title is mandatory")
     private String title;
+
+    @NotBlank(message = "Description is mandatory")
     private String description;
-    private LocalDateTime date;
+
+    @NotNull(message = "Date is mandatory")
+    @Temporal(TemporalType.DATE)
+    private Date date;
 
     @ManyToOne
     @JoinColumn(name = "venue_id")
     private Venue venue;
 
-    @OneToMany (mappedBy = "event")
-    private Set<Review> reviews;
+    private String type;
 
-    // Getters e Setters
+    private int capacity;
+
+    private int bookedSeats;
+
+    // Costruttori, getter e setter (come prima)
+    public Event() {}
+
+    public Event(String title, String description, Date date, Venue venue, String type, int capacity, int bookedSeats) {
+        this.title = title;
+        this.description = description;
+        this.date = date;
+        this.venue = venue;
+        this.type = type;
+        this.capacity = capacity;
+        this.bookedSeats = bookedSeats;
+    }
+
+
     public Long getId() {
         return id;
     }
@@ -59,11 +71,11 @@ public class Event {
         this.description = description;
     }
 
-    public LocalDateTime getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(LocalDateTime date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 
@@ -75,13 +87,27 @@ public class Event {
         this.venue = venue;
     }
 
-    public Set<Review> getReviews() {
-        return reviews;
+    public String getType() {
+        return type;
     }
 
-    public void setReviews(Set<Review> reviews) {
-        this.reviews = reviews;
+    public void setType(String type) {
+        this.type = type;
     }
-    
 
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
+    public int getBookedSeats() {
+        return bookedSeats;
+    }
+
+    public void setBookedSeats(int bookedSeats) {
+        this.bookedSeats = bookedSeats;
+    }
 }

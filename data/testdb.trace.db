@@ -1370,3 +1370,34 @@ describe users [42001-232]
 2025-01-15 11:23:09.267820+01:00 jdbc[13]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]descibe users"; expected "DELETE, DROP"; SQL statement:
 descibe users [42001-232]
+2025-02-05 15:09:23.581653+01:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]describe table events"; expected "DELETE, DROP"; SQL statement:
+describe table events [42001-232]
+2025-02-05 15:09:45.980602+01:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]describe events"; expected "DELETE, DROP"; SQL statement:
+describe events [42001-232]
+2025-02-05 15:45:57.160791+01:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "ALTER TABLE events\000d\000aADD COLUMN capacity INT[*],\000d\000aADD COLUMN booked_seats INT"; SQL statement:
+ALTER TABLE events
+ADD COLUMN capacity INT,
+ADD COLUMN booked_seats INT [42000-232]
+2025-02-05 15:46:47.458143+01:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "ALTER TABLE events\000d\000aADD COLUMN capacity INT[*],\000d\000aADD COLUMN booked_seats INT"; SQL statement:
+ALTER TABLE events
+ADD COLUMN capacity INT,
+ADD COLUMN booked_seats INT [42000-232]
+2025-02-05 15:47:29.373070+01:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "ALTER TABLE events\000d\000aADD COLUMN capacity INT[*],\000d\000aADD COLUMN booked_seats INT"; SQL statement:
+ALTER TABLE events
+ADD COLUMN capacity INT,
+ADD COLUMN booked_seats INT [42000-232]
+2025-02-05 15:50:05.704322+01:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "ALTER TABLE events\000d\000aADD COLUMN capacity INT[*],\000d\000aADD COLUMN booked_seats INT"; SQL statement:
+ALTER TABLE events
+ADD COLUMN capacity INT,
+ADD COLUMN booked_seats INT [42000-232]
+2025-02-05 15:51:03.607827+01:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "ALTER TABLE events\000d\000aADD COLUMN IF NOT EXISTS capacity INT[*],\000d\000aADD COLUMN IF NOT EXISTS booked_seats INT"; SQL statement:
+ALTER TABLE events
+ADD COLUMN IF NOT EXISTS capacity INT,
+ADD COLUMN IF NOT EXISTS booked_seats INT [42000-232]

@@ -48,6 +48,9 @@ public class WebSecurityConfig {
                 return config;
             }))
             .csrf(csrf -> csrf.disable()) // Disabilitato per API stateless (JWT)
+            .headers(headers -> headers
+                .frameOptions(frameOptions -> frameOptions.disable())
+            )
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/auth/login", "/auth/register", "/h2-console/**").permitAll() // Permetti accesso a login, registrazione e H2 console
                 .requestMatchers(HttpMethod.GET, "/events", "/events/**", "/venues", "/venues/**").authenticated() // Richiedi autenticazione per le GET su eventi/venues

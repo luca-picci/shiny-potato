@@ -1,29 +1,33 @@
 package com.example.shiny_potato.dto;
 
-import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.Date;
 
 public class EventDTO {
 
     private Long id;
     private String title;
     private String description;
-    private LocalDateTime date;
-    private Long venueId;
-    private Set<ReviewDTO> reviews;  // Campo reviews
+    private Date date;
+    private Long venueId; // ID del Venue
+    private String type;
+    private int capacity;
+    private int bookedSeats;
+
+    // Costruttori, getter e setter (come prima)
 
     public EventDTO() {}
 
-    public EventDTO(Long id, String title, String description, LocalDateTime date, Long venueId, Set<ReviewDTO> reviews) {
+    public EventDTO(Long id, String title, String description, Date date, Long venueId, String type, int capacity, int bookedSeats) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.date = date;
         this.venueId = venueId;
-        this.reviews = reviews;
+        this.type = type;
+        this.capacity = capacity;
+        this.bookedSeats = bookedSeats;
     }
 
-    // Getters e Setters
     public Long getId() {
         return id;
     }
@@ -48,11 +52,11 @@ public class EventDTO {
         this.description = description;
     }
 
-    public LocalDateTime getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(LocalDateTime date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 
@@ -64,11 +68,27 @@ public class EventDTO {
         this.venueId = venueId;
     }
 
-    public Set<ReviewDTO> getReviews() {
-        return reviews;
+    public String getType() {
+        return type;
     }
 
-    public void setReviews(Set<ReviewDTO> reviews) {
-        this.reviews = reviews;
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
+    public int getBookedSeats() {
+        return bookedSeats;
+    }
+
+    public void setBookedSeats(int bookedSeats) {
+        this.bookedSeats = bookedSeats;
     }
 }

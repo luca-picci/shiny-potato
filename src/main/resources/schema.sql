@@ -19,6 +19,10 @@ CREATE TABLE events (
     title VARCHAR(255) NOT NULL,
     date DATE NOT NULL,
     venue_id INT,
+    type VARCHAR(255),
+    description TEXT,
+    capacity INT,
+    booked_seats INT,
     FOREIGN KEY (venue_id) REFERENCES venues (id)
 );
 

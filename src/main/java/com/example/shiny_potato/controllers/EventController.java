@@ -6,6 +6,7 @@ import com.example.shiny_potato.entitities.Venue;
 import com.example.shiny_potato.mappers.EventMapper;
 import com.example.shiny_potato.repositories.EventRepository;
 import com.example.shiny_potato.repositories.VenueRepository;
+import com.example.shiny_potato.services.EventService; // Import EventService
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,28 +34,34 @@ public class EventController {
     @Autowired
     private EventMapper eventMapper;
 
-    // GET /events - Lista di tutti gli eventi
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE) // Produces JSON
-    public List<EventDTO> getAllEvents() {
-        return eventRepository.findAll().stream()
+    @Autowired
+    private EventService eventService; // Inietta EventService
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<EventDTO> getEvents(@RequestParam(required = false) String type) {
+        List<Event> events;
+        if (type != null && !type.isEmpty()) {
+            events = eventService.getAvailableEventsByType(type);
+        } else {
+            events = eventService.getAllEvents();
+        }
+        return events.stream()
                 .map(eventMapper::toEventDTO)
                 .collect(Collectors.toList());
     }
 
-    // GET /venues/{id}/events - Lista eventi per un locale specifico
-    @GetMapping(value = "/venues/{id}", produces = MediaType.APPLICATION_JSON_VALUE) // Produces JSON
+    @GetMapping(value = "/venues/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getEventsByVenue(@PathVariable Long id) {
         Optional<Venue> venue = venueRepository.findById(id);
         if (venue.isPresent()) {
             List<Event> events = eventRepository.findByVenue(venue.get());
-            return ResponseEntity.ok(events); // 200 OK
+            return ResponseEntity.ok(events);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ErrorResponse("Venue not found with id " + id));
         }
     }
 
-    // POST /events - Crea un nuovo evento (solo per gestori)
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAuthority('MANAGER')")
     public ResponseEntity<?> createEvent(@Valid @RequestBody Event event) {
@@ -69,13 +76,12 @@ public class EventController {
             }
 
             Event createdEvent = eventRepository.save(event);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent); // 201 Created
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent);
         } catch (Exception ex) {
             return ResponseEntity.internalServerError().body(new ErrorResponse("An error occurred: " + ex.getMessage()));
         }
     }
 
-    // PUT /events/{id} - Modifica di un evento esistente (solo per gestori)
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAuthority('MANAGER')")
     public ResponseEntity<?> updateEvent(@PathVariable Long id, @Valid @RequestBody Event eventDetails) {
@@ -99,13 +105,12 @@ public class EventController {
             }
 
             eventRepository.save(existingEvent);
-            return ResponseEntity.ok(existingEvent); // 200 OK
+            return ResponseEntity.ok(existingEvent);
         } catch (Exception ex) {
             return ResponseEntity.internalServerError().body(new ErrorResponse("An error occurred: " + ex.getMessage()));
         }
     }
 
-    // DELETE /events/{id} - Rimozione di un evento esistente (solo per gestori)
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAuthority('MANAGER')")
     public ResponseEntity<?> deleteEvent(@PathVariable Long id) {
@@ -116,19 +121,18 @@ public class EventController {
             }
 
             eventRepository.delete(eventOpt.get());
-            return ResponseEntity.noContent().build(); // 204 No Content
+            return ResponseEntity.noContent().build();
         } catch (Exception ex) {
             return ResponseEntity.internalServerError().body(new ErrorResponse("An error occurred: " + ex.getMessage()));
         }
     }
 
-    // Inner class for error responses
     public static class ErrorResponse {
         private int status;
         private String message;
 
         public ErrorResponse(String message) {
-            this.status = HttpStatus.BAD_REQUEST.value(); // Default to 400 Bad Request
+            this.status = HttpStatus.BAD_REQUEST.value();
             this.message = message;
         }
 
@@ -137,7 +141,6 @@ public class EventController {
             this.message = message;
         }
 
-        // Getters and setters are essential for JSON serialization
         public int getStatus() {
             return status;
         }
