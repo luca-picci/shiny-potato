@@ -1,7 +1,10 @@
 package com.example.shiny_potato.security;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -9,68 +12,74 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 
 import com.example.shiny_potato.filters.JwtAuthenticationFilter;
 import com.example.shiny_potato.utilities.JwtUtil;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import com.example.shiny_potato.services.MyUserDetailsService; // Import corretto
 
-import javax.crypto.spec.SecretKeySpec;
-
+/**
+ * Classe di configurazione per Spring Security.
+ * Definisce le regole di sicurezza per l'applicazione,
+ * inclusi i percorsi consentiti, le autorizzazioni e il filtro JWT.
+ */
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
 
-    // Chiave segreta per firmare i JWT
-    private static final String SECRET_KEY = "improved-rotary-phone";
-
+    /**
+     * Configura la catena di filtri di sicurezza (SecurityFilterChain).
+     *
+     * @param http               L'oggetto HttpSecurity per la configurazione.
+     * @param jwtAuthenticationFilter Il filtro di autenticazione JWT.
+     * @param userDetailsService  Il servizio per caricare i dettagli dell'utente.
+     * @return La catena di filtri di sicurezza configurata.
+     * @throws Exception Se si verifica un errore durante la configurazione.
+     */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
-        // CORS configurazione
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter, MyUserDetailsService userDetailsService) throws Exception {
         http
             .cors(cors -> cors.configurationSource(request -> {
-                var corsConfig = new org.springframework.web.cors.CorsConfiguration();
-                corsConfig.addAllowedOrigin("http://localhost:4200"); // Permetti richieste dal frontend Angular
-                corsConfig.addAllowedMethod("*");
-                corsConfig.addAllowedHeader("*");
-                corsConfig.setAllowCredentials(true);
-                return corsConfig;
+                CorsConfiguration config = new CorsConfiguration();
+                config.setAllowedOrigins(List.of("http://localhost:4200")); // Origini consentite (localhost:4200 per Angular)
+                config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Metodi HTTP consentiti
+                config.setAllowedHeaders(List.of("Authorization", "Content-Type")); // Intestazioni consentite
+                config.setAllowCredentials(true); // Abilita l'invio di cookie e credenziali con le richieste CORS
+                return config;
             }))
-            // Disabilita CSRF per le API REST
-            .csrf(csrf -> csrf.disable())
-            .headers(headers -> {
-                headers.frameOptions(frameOptions -> frameOptions.sameOrigin()); // Permetti gli iframe con la stessa origine
-            })
-            // Aggiungi il filtro JWT
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            // Autorizzazione per gli endpoint
+            .csrf(csrf -> csrf.disable()) // Disabilitato per API stateless (JWT)
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/auth/login", "/auth/register", "/h2-console/**").permitAll() // Endpoint pubblici
-                .requestMatchers("/events", "/venues").authenticated() // GET su /events e /venues sono accessibili a chi è autenticato
-                .requestMatchers("/reviews", "/reviews/**").authenticated() // Tutti gli endpoint relativi a /reviews richiedono autenticazione
-                .requestMatchers("/events/**", "/venues/**").hasAuthority("MANAGER") // Tutte le altre operazioni su /events e /venues (POST, PUT, DELETE) richiedono l'autorità MANAGER
-                .anyRequest().authenticated() // Gli altri endpoint sono protetti
+                .requestMatchers("/auth/login", "/auth/register", "/h2-console/**").permitAll() // Permetti accesso a login, registrazione e H2 console
+                .requestMatchers(HttpMethod.GET, "/events", "/events/**", "/venues", "/venues/**").authenticated() // Richiedi autenticazione per le GET su eventi/venues
+                .requestMatchers("/events", "/events/**", "/venues", "/venues/**").hasAuthority("ROLE_MANAGER") // Richiedi ruolo MANAGER per altre operazioni su eventi/venues
+                .anyRequest().authenticated() // Tutte le altre richieste richiedono autenticazione
             )
-            // Gestione sessione stateless (nessuna sessione)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Configura stateless per REST APIs
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Sessioni stateless (JWT)
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // Aggiungi il filtro JWT prima del filtro standard di autenticazione
 
         return http.build();
     }
 
-    @Bean
-    public JwtDecoder jwtDecoder() {
-        byte[] secretKeyBytes = SECRET_KEY.getBytes();
-        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKeyBytes, "HmacSHA256");
-        return NimbusJwtDecoder.withSecretKey(secretKeySpec).build(); // Decodifica i JWT usando la chiave segreta
-    }
-
+    /**
+     * Crea un bean per il PasswordEncoder.
+     * Utilizzato per codificare le password prima di salvarle nel database.
+     *
+     * @return Il PasswordEncoder bean.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // Usa un encoder sicuro (BCrypt)
+        return new BCryptPasswordEncoder(); // BCryptPasswordEncoder è un buon algoritmo di hashing
     }
 
+    /**
+     * Crea un bean per il filtro di autenticazione JWT.
+     *
+     * @param jwtUtil           L'utility per la gestione dei JWT.
+     * @param userDetailsService Il servizio per caricare i dettagli dell'utente.
+     * @return Il filtro di autenticazione JWT.
+     */
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtil jwtUtil) {
-        return new JwtAuthenticationFilter(jwtUtil); // Inietta JwtUtil nel filtro
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtil jwtUtil, MyUserDetailsService userDetailsService) {
+        return new JwtAuthenticationFilter(jwtUtil, userDetailsService);
     }
 }
