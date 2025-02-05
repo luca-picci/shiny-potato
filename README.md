@@ -61,13 +61,13 @@ Il token JWT è firmato utilizzando una chiave segreta definita nel backend. Il 
 
 I token scadono dopo 1 ora.
 
-### Validazione del Token (Corretta)
+### Validazione del Token 
 
 I token sono convalidati automaticamente tramite un filtro personalizzato (`JwtAuthenticationFilter`), che verifica:
 
 - La firma del token.
 - La scadenza del token.
-- **La corrispondenza tra l'ID utente e l'email nel token con i dati presenti nel database.**  *(Questa è la correzione)*
+- **La corrispondenza tra l'ID utente e l'email nel token con i dati presenti nel database.**  *
 
 ### Gestione degli Errori
 
