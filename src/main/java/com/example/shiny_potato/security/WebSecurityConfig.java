@@ -16,7 +16,7 @@ import org.springframework.web.cors.CorsConfiguration;
 
 import com.example.shiny_potato.filters.JwtAuthenticationFilter;
 import com.example.shiny_potato.utilities.JwtUtil;
-import com.example.shiny_potato.services.MyUserDetailsService; // Import corretto
+import com.example.shiny_potato.services.MyUserDetailsService; 
 
 /**
  * Classe di configurazione per Spring Security.
