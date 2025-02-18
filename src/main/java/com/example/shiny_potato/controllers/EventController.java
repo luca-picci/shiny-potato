@@ -1,12 +1,12 @@
 package com.example.shiny_potato.controllers;
 
 import com.example.shiny_potato.dto.EventDTO;
-import com.example.shiny_potato.entitities.Event;
-import com.example.shiny_potato.entitities.Venue;
+import com.example.shiny_potato.entities.Event;
+import com.example.shiny_potato.entities.Venue;
 import com.example.shiny_potato.mappers.EventMapper;
 import com.example.shiny_potato.repositories.EventRepository;
 import com.example.shiny_potato.repositories.VenueRepository;
-import com.example.shiny_potato.services.EventService; // Import EventService
+import com.example.shiny_potato.services.EventService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import com.example.shiny_potato.exceptions.ErrorResponse;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +37,7 @@ public class EventController {
     private EventMapper eventMapper;
 
     @Autowired
-    private EventService eventService; // Inietta EventService
+    private EventService eventService; 
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<EventDTO> getEvents(@RequestParam(required = false) String type) {
@@ -50,41 +52,56 @@ public class EventController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping(value = "/venues/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/venues/{id}")
     public ResponseEntity<?> getEventsByVenue(@PathVariable Long id) {
-        Optional<Venue> venue = venueRepository.findById(id);
-        if (venue.isPresent()) {
-            List<Event> events = eventRepository.findByVenue(venue.get());
-            return ResponseEntity.ok(events);
+        Optional<Venue> venueOpt = venueRepository.findById(id);
+        if (venueOpt.isPresent()) {
+            List<EventDTO> eventDTOs = eventRepository.findByVenue(venueOpt.get())
+                .stream()
+                .map(eventMapper::toEventDTO)
+                .collect(Collectors.toList());
+            return ResponseEntity.ok(eventDTOs);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("Venue not found with id " + id));
+                .body(new ErrorResponse("Venue not found with id" + id));
         }
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAuthority('MANAGER')")
-    public ResponseEntity<?> createEvent(@Valid @RequestBody Event event) {
+    public ResponseEntity<?> createEvent(@Valid @RequestBody EventDTO eventDTO) {
         try {
-            if (event.getVenue() == null || event.getVenue().getId() == null) {
-                return ResponseEntity.badRequest().body(new ErrorResponse("Venue and Venue ID cannot be null."));
+            if (eventDTO.getVenueId() == null) {
+                return ResponseEntity.badRequest().body(new ErrorResponse("Venue ID cannot be null."));
             }
 
-            Long venueId = event.getVenue().getId();
-            if (!venueRepository.existsById(venueId)) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("Venue not found with id " + venueId));
+            Optional<Venue> venueOpt = venueRepository.findById(eventDTO.getVenueId());
+            if (venueOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("Venue not found"));
             }
+        
+        Event event = new Event();
+        event.setTitle(eventDTO.getTitle());
+        event.setDescription(eventDTO.getDescription());
+        event.setDate(eventDTO.getDate());
+        event.setVenue(venueOpt.get());
+        event.setType(eventDTO.getType());
+        event.setCapacity(eventDTO.getCapacity());
+        event.setBookedSeats(eventDTO.getBookedSeats());
 
-            Event createdEvent = eventRepository.save(event);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent);
+        Event savedEvent = eventRepository.save(event);
+        return ResponseEntity.status((HttpStatus.CREATED)).body(eventMapper.toEventDTO(savedEvent));
         } catch (Exception ex) {
-            return ResponseEntity.internalServerError().body(new ErrorResponse("An error occurred: " + ex.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(HttpStatus.NOT_FOUND, "Venue not found with id "));
+
+
         }
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAuthority('MANAGER')")
-    public ResponseEntity<?> updateEvent(@PathVariable Long id, @Valid @RequestBody Event eventDetails) {
+    public ResponseEntity<?> updateEvent(@PathVariable Long id, @Valid @RequestBody EventDTO eventDetails) {
         try {
             Optional<Event> existingEventOpt = eventRepository.findById(id);
             if (existingEventOpt.isEmpty()) {
@@ -95,21 +112,26 @@ public class EventController {
             existingEvent.setTitle(eventDetails.getTitle());
             existingEvent.setDescription(eventDetails.getDescription());
             existingEvent.setDate(eventDetails.getDate());
+            existingEvent.setType(eventDetails.getType());
+            existingEvent.setCapacity(eventDetails.getCapacity());
+            existingEvent.setBookedSeats(eventDetails.getBookedSeats());
 
-            if (eventDetails.getVenue() != null) {
-                Long venueId = eventDetails.getVenue().getId();
-                if (venueId == null || !venueRepository.existsById(venueId)) {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("Venue not found with id " + venueId));
+            // 🛠️ Controlla se venueId è stato fornito e aggiornalo
+            if (eventDetails.getVenueId() != null) {
+                Optional<Venue> venueOpt = venueRepository.findById(eventDetails.getVenueId());
+                if (venueOpt.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("Venue not found with id " + eventDetails.getVenueId()));
                 }
-                existingEvent.setVenue(eventDetails.getVenue());
+                existingEvent.setVenue(venueOpt.get());
             }
 
-            eventRepository.save(existingEvent);
-            return ResponseEntity.ok(existingEvent);
+            Event updatedEvent = eventRepository.save(existingEvent);
+            return ResponseEntity.ok(eventMapper.toEventDTO(updatedEvent)); // 🔄 Restituisci il DTO
         } catch (Exception ex) {
             return ResponseEntity.internalServerError().body(new ErrorResponse("An error occurred: " + ex.getMessage()));
         }
     }
+
 
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAuthority('MANAGER')")
@@ -124,37 +146,6 @@ public class EventController {
             return ResponseEntity.noContent().build();
         } catch (Exception ex) {
             return ResponseEntity.internalServerError().body(new ErrorResponse("An error occurred: " + ex.getMessage()));
-        }
-    }
-
-    public static class ErrorResponse {
-        private int status;
-        private String message;
-
-        public ErrorResponse(String message) {
-            this.status = HttpStatus.BAD_REQUEST.value();
-            this.message = message;
-        }
-
-        public ErrorResponse(int status, String message) {
-            this.status = status;
-            this.message = message;
-        }
-
-        public int getStatus() {
-            return status;
-        }
-
-        public void setStatus(int status) {
-            this.status = status;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
         }
     }
 }

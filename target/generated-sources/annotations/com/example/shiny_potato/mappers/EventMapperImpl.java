@@ -1,15 +1,15 @@
 package com.example.shiny_potato.mappers;
 
 import com.example.shiny_potato.dto.EventDTO;
-import com.example.shiny_potato.entitities.Event;
-import com.example.shiny_potato.entitities.Venue;
+import com.example.shiny_potato.entities.Event;
+import com.example.shiny_potato.entities.Venue;
 import javax.annotation.processing.Generated;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-02-05T15:43:23+0100",
-    comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.41.0.z20250115-2156, environment: Java 21.0.5 (Eclipse Adoptium)"
+    date = "2025-02-12T10:58:57+0100",
+    comments = "version: 1.6.3, compiler: javac, environment: Java 17.0.13 (Eclipse Adoptium)"
 )
 @Component
 public class EventMapperImpl implements EventMapper {
@@ -23,13 +23,13 @@ public class EventMapperImpl implements EventMapper {
         EventDTO eventDTO = new EventDTO();
 
         eventDTO.setVenueId( eventVenueId( event ) );
-        eventDTO.setBookedSeats( event.getBookedSeats() );
-        eventDTO.setCapacity( event.getCapacity() );
-        eventDTO.setDate( event.getDate() );
-        eventDTO.setDescription( event.getDescription() );
         eventDTO.setId( event.getId() );
         eventDTO.setTitle( event.getTitle() );
+        eventDTO.setDescription( event.getDescription() );
+        eventDTO.setDate( event.getDate() );
         eventDTO.setType( event.getType() );
+        eventDTO.setCapacity( event.getCapacity() );
+        eventDTO.setBookedSeats( event.getBookedSeats() );
 
         return eventDTO;
     }
@@ -43,13 +43,13 @@ public class EventMapperImpl implements EventMapper {
         Event event = new Event();
 
         event.setVenue( eventDTOToVenue( eventDTO ) );
-        event.setBookedSeats( eventDTO.getBookedSeats() );
-        event.setCapacity( eventDTO.getCapacity() );
-        event.setDate( eventDTO.getDate() );
-        event.setDescription( eventDTO.getDescription() );
         event.setId( eventDTO.getId() );
         event.setTitle( eventDTO.getTitle() );
+        event.setDescription( eventDTO.getDescription() );
+        event.setDate( eventDTO.getDate() );
         event.setType( eventDTO.getType() );
+        event.setCapacity( eventDTO.getCapacity() );
+        event.setBookedSeats( eventDTO.getBookedSeats() );
 
         return event;
     }

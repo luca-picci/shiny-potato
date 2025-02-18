@@ -1,5 +1,6 @@
 package com.example.shiny_potato.controllers;
 
+import com.example.shiny_potato.dto.UserDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -8,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.shiny_potato.entitities.User;
+import com.example.shiny_potato.entities.User;
 import com.example.shiny_potato.repositories.UserRepository;
 import com.example.shiny_potato.utilities.JwtUtil;
 
@@ -34,32 +35,45 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody User loginUser) {
+    public ResponseEntity<Map<String, Object>> login(@RequestBody UserDTO userDTO) {
+        System.out.println("🔑 Tentativo di login con email: " + userDTO.getEmail());
+
+        if (userDTO.getPassword() == null || userDTO.getPassword().isEmpty()) {
+            System.out.println("⛔ Password mancante");
+            throw new IllegalArgumentException("Password cannot be empty");
+        }
         Map<String, Object> response = new HashMap<>();
-        
-        // 1. Cerca l'utente per email (usa Optional per gestire il caso null)
-        Optional<User> userOptional = userRepository.findByEmail(loginUser.getEmail());
+
+        Optional<User> userOptional = userRepository.findByEmail(userDTO.getEmail());
         
         if (userOptional.isEmpty()) {
+            System.out.println("⛔ Utente non trovato!");
             response.put("message", "Credenziali non valide");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
         User userFromDb = userOptional.get();
+        System.out.println("✅ Utente trovato: " + userFromDb.getEmail());
 
-        // 2. Verifica password
-        if (!passwordEncoder.matches(loginUser.getPassword(), userFromDb.getPassword())) {
+        boolean passwordMatches = passwordEncoder.matches(userDTO.getPassword(), userFromDb.getPassword());
+        System.out.println("🔍 Password corretta? " + passwordMatches);
+
+        System.out.println("🔑 Password inserita dall'utente: " + userDTO.getPassword());
+        System.out.println("🔒 Password memorizzata nel database: " + userFromDb.getPassword());
+        System.out.println("✅ Confronto password: " + passwordEncoder.matches(userDTO.getPassword(), userFromDb.getPassword()));
+
+
+        if (!passwordMatches) {
             response.put("message", "Credenziali non valide");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        // 3. Genera token usando la nuova versione di JwtUtil
         String token = jwtUtil.generateToken(userFromDb);
-        
-        // 4. Prepara risposta
+        System.out.println("✅ Token generato: " + token);
+
         response.put("token", token);
         response.put("userId", userFromDb.getId());
-        response.put("role", userFromDb.getUserType());  // Assicurati che il campo si chiami "role" nell'entità
+        response.put("role", userFromDb.getUserType());
         
         return ResponseEntity.ok(response);
     }

@@ -1,6 +1,6 @@
 package com.example.shiny_potato.repositories;
 
-import com.example.shiny_potato.entitities.User;
+import com.example.shiny_potato.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 

@@ -1,7 +1,7 @@
 package com.example.shiny_potato.repositories;
 
-import com.example.shiny_potato.entitities.Review;
-import com.example.shiny_potato.entitities.Event;
+import com.example.shiny_potato.entities.Review;
+import com.example.shiny_potato.entities.Event;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;

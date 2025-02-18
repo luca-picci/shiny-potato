@@ -1,16 +1,16 @@
 package com.example.shiny_potato.mappers;
 
 import com.example.shiny_potato.dto.ReviewDTO;
-import com.example.shiny_potato.entitities.Event;
-import com.example.shiny_potato.entitities.Review;
-import com.example.shiny_potato.entitities.User;
+import com.example.shiny_potato.entities.Event;
+import com.example.shiny_potato.entities.Review;
+import com.example.shiny_potato.entities.User;
 import javax.annotation.processing.Generated;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-02-05T15:40:21+0100",
-    comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.41.0.z20250115-2156, environment: Java 21.0.5 (Eclipse Adoptium)"
+    date = "2025-02-12T10:58:57+0100",
+    comments = "version: 1.6.3, compiler: javac, environment: Java 17.0.13 (Eclipse Adoptium)"
 )
 @Component
 public class ReviewMapperImpl implements ReviewMapper {
@@ -25,9 +25,9 @@ public class ReviewMapperImpl implements ReviewMapper {
 
         reviewDTO.setUserId( reviewUserId( review ) );
         reviewDTO.setEventId( reviewEventId( review ) );
-        reviewDTO.setComment( review.getComment() );
         reviewDTO.setId( review.getId() );
         reviewDTO.setRating( review.getRating() );
+        reviewDTO.setComment( review.getComment() );
 
         return reviewDTO;
     }
@@ -42,9 +42,9 @@ public class ReviewMapperImpl implements ReviewMapper {
 
         review.setUser( reviewDTOToUser( reviewDTO ) );
         review.setEvent( reviewDTOToEvent( reviewDTO ) );
-        review.setComment( reviewDTO.getComment() );
         review.setId( reviewDTO.getId() );
         review.setRating( reviewDTO.getRating() );
+        review.setComment( reviewDTO.getComment() );
 
         return review;
     }

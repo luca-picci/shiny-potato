@@ -1,17 +1,15 @@
-package com.example.shiny_potato.entitities;
-import java.util.Set;
+package com.example.shiny_potato.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "venues")
 public class Venue {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,8 +18,16 @@ public class Venue {
     private String address;
     private String description;
 
-    @OneToMany(mappedBy = "venue")
-    private Set<Event> events;
+    @Version
+    private Integer version;
+
+    @OneToMany(mappedBy = "venue", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Event> events = new ArrayList<>();
+
+    public Venue() {
+        this.version = 0;
+    }
 
     // Getters e Setters
     public Long getId() {
@@ -56,11 +62,19 @@ public class Venue {
         this.description = description;
     }
 
-    public Set<Event> getEvents() {
+    public List<Event> getEvents() {
         return events;
     }
 
-    public void setEvents(Set<Event> events) {
-        this.events = events;
+    public void setEvents(List<Event> events) {
+        this.events = events != null ? events : new ArrayList<>();
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
     }
 }

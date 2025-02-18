@@ -13,8 +13,6 @@ public class EventDTO {
     private int capacity;
     private int bookedSeats;
 
-    // Costruttori, getter e setter (come prima)
-
     public EventDTO() {}
 
     public EventDTO(Long id, String title, String description, Date date, Long venueId, String type, int capacity, int bookedSeats) {

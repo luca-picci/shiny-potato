@@ -2,7 +2,7 @@ package com.example.shiny_potato.controllers;
 
 import com.example.shiny_potato.dto.ReviewDTO;
 import com.example.shiny_potato.services.ReviewService;
-import com.example.shiny_potato.entitities.User;
+import com.example.shiny_potato.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,6 +1,6 @@
 package com.example.shiny_potato.services;
 
-import com.example.shiny_potato.entitities.User;
+import com.example.shiny_potato.entities.User;
 import com.example.shiny_potato.repositories.UserRepository;
 
 import java.util.List;

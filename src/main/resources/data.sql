@@ -31,3 +31,8 @@ VALUES
     ((SELECT id FROM users WHERE name = 'Lorenzo'), 
      (SELECT id FROM events WHERE title= 'Convegno Tecnologico'), 
      'Organizzazione impeccabile e interventi interessanti.', 4);
+
+-- Inserisci le prenotazioni
+INSERT INTO bookings (user_id, event_id, booking_date) VALUES
+                                                           ((SELECT id FROM users WHERE name = 'Giulia'), (SELECT id FROM events WHERE title = 'Concerto di Vasco Rossi'), '2025-02-01 10:00:00'),
+                                                           ((SELECT id FROM users WHERE name = 'Lorenzo'), (SELECT id FROM events WHERE title = 'Convegno Tecnologico'), '2025-02-15 14:30:00');

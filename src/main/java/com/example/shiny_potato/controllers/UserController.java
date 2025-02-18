@@ -1,6 +1,6 @@
 package com.example.shiny_potato.controllers;
 
-import com.example.shiny_potato.entitities.User;
+import com.example.shiny_potato.entities.User;
 import com.example.shiny_potato.services.UserService;
 import com.example.shiny_potato.utilities.JwtUtil;
 import org.springframework.http.ResponseEntity;

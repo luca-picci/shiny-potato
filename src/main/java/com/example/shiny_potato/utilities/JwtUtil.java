@@ -4,7 +4,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 import com.example.shiny_potato.repositories.UserRepository;
-import com.example.shiny_potato.entitities.User;
+import com.example.shiny_potato.entities.User;
 import java.security.Key;
 import java.util.Date;
 
@@ -15,6 +15,9 @@ import java.util.Date;
 public class JwtUtil {
 
     private final Key key;
+
+    private static final String SECRET_KEY = "0123456789abcdef0123456789abcdef";
+
     private final UserRepository userRepository;
 
     /**
@@ -22,7 +25,7 @@ public class JwtUtil {
      * @param userRepository Il repository per accedere ai dati degli utenti.
      */
     public JwtUtil(UserRepository userRepository) {
-        this.key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        this.key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
         this.userRepository = userRepository;
     }
 

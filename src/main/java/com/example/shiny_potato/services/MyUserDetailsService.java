@@ -6,7 +6,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.example.shiny_potato.entitities.User;
+import com.example.shiny_potato.entities.User;
 import com.example.shiny_potato.repositories.UserRepository;
 import com.example.shiny_potato.models.MyUserDetails;
 

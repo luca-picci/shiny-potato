@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import com.example.shiny_potato.dto.ReviewDTO;
-import com.example.shiny_potato.entitities.Review;
+import com.example.shiny_potato.entities.Review;
 
 @Mapper(componentModel = "spring") // Basta questa annotazione
 public interface ReviewMapper {

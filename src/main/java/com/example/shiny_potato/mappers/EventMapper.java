@@ -1,7 +1,7 @@
 package com.example.shiny_potato.mappers;
 
 import com.example.shiny_potato.dto.EventDTO;
-import com.example.shiny_potato.entitities.Event;
+import com.example.shiny_potato.entities.Event;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

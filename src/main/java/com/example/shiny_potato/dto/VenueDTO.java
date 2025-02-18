@@ -1,5 +1,7 @@
 package com.example.shiny_potato.dto;
 
+import org.hibernate.sql.ast.tree.expression.Over;
+
 import java.util.Set;
 
 public class VenueDTO {
@@ -8,17 +10,18 @@ public class VenueDTO {
     private String name;
     private String address;
     private String description;
-    private Set<Long> eventIds;  // Usa Set<Long> per gli ID degli eventi
+    private Set<Long> eventIds;
+    private Integer version;
 
-    // Costruttore
     public VenueDTO() {}
 
-    public VenueDTO(Long id, String name, String address, String description, Set<Long> eventIds) {
+    public VenueDTO(Long id, String name, String address, String description, Set<Long> eventIds, Integer version) {
         this.id = id;
         this.name = name;
         this.address = address;
         this.description = description;
         this.eventIds = eventIds;
+        this.version = version;
     }
 
     // Getters e Setters
@@ -60,5 +63,13 @@ public class VenueDTO {
 
     public void setEventIds(Set<Long> eventIds) {
         this.eventIds = eventIds;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
     }
 }

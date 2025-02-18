@@ -7,14 +7,18 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.example.shiny_potato.entitities.User;
+import com.example.shiny_potato.entities.User;
 
 public class MyUserDetails implements UserDetails {
-    
+
     private final User user;
 
     public MyUserDetails(User user) {
         this.user = user;
+    }
+
+    public User getUser() {
+        return user;
     }
 
     @Override
@@ -28,8 +32,8 @@ public class MyUserDetails implements UserDetails {
     }
 
     @Override
-    public String getUsername() {
-        return user.getEmail();
+    public String getUsername() { // 🔄 Metodo aggiunto
+        return user.getEmail(); // Usa l'email come username
     }
 
     @Override

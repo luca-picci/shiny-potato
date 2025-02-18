@@ -1,9 +1,9 @@
 package com.example.shiny_potato.services;
 
 import com.example.shiny_potato.dto.ReviewDTO;
-import com.example.shiny_potato.entitities.Event;
-import com.example.shiny_potato.entitities.Review;
-import com.example.shiny_potato.entitities.User;
+import com.example.shiny_potato.entities.Event;
+import com.example.shiny_potato.entities.Review;
+import com.example.shiny_potato.entities.User;
 import com.example.shiny_potato.repositories.ReviewRepository;
 import com.example.shiny_potato.repositories.EventRepository;
 import com.example.shiny_potato.exceptions.ResourceNotFoundException;

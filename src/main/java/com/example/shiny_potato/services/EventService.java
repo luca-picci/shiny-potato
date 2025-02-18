@@ -1,6 +1,6 @@
 package com.example.shiny_potato.services;
 
-import com.example.shiny_potato.entitities.Event;
+import com.example.shiny_potato.entities.Event;
 import com.example.shiny_potato.repositories.EventRepository;
 import org.springframework.stereotype.Service;
 

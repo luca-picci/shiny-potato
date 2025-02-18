@@ -1,5 +1,6 @@
-package com.example.shiny_potato.entitities;
+package com.example.shiny_potato.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -25,6 +26,7 @@ public class Event {
 
     @ManyToOne
     @JoinColumn(name = "venue_id")
+    @JsonIgnore
     private Venue venue;
 
     private String type;
@@ -33,7 +35,6 @@ public class Event {
 
     private int bookedSeats;
 
-    // Costruttori, getter e setter (come prima)
     public Event() {}
 
     public Event(String title, String description, Date date, Venue venue, String type, int capacity, int bookedSeats) {
